@@ -3,5 +3,9 @@
     "api/ask.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/ask.js" },
+    { "source": "/(.*)", "destination": "/frontend/index.html" }
+  ]
 }
