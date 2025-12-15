@@ -1,24 +1,7 @@
 {
-  "functions": {
-    "api/ask.js": {
-      "maxDuration": 30
+    "functions": {
+        "api/ask.js": {
+            "maxDuration": 30
+        }
     }
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/ask.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "github": {
-    "enabled": true,
-    "silent": true
-  }
 }
