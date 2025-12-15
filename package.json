@@ -1,0 +1,19 @@
+{
+  "name": "المساعد-الهندسي",
+  "version": "1.0.0",
+  "description": "منصة تعليمية ذكية لطلاب الهندسة العراقيين",
+  "main": "frontend/index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "start": "npx serve frontend"
+  },
+  "keywords": ["education", "engineering", "iraq", "ai", "students"],
+  "author": "المساعد الهندسي",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
