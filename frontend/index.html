@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <title>المساعد الهندسي - منصة تعليمية للطلاب العراقيين</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --light: #f8f9ff;
+            --dark: #333;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* تثبيت الزر في الأسفل للموبايل */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .floating-btn {
+                display: block;
+            }
+        }
+
+        header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .upload-section {
+            position: relative;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--primary);
+            border-radius: 15px;
+            padding: 30px 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light);
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .upload-area:active {
+            transform: scale(0.98);
+            background: #e0e7ff;
+        }
+
+        .upload-area.dragover {
+            background: #e0e7ff;
+            border-color: var(--secondary);
+            transform: scale(0.98);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .form-group {
+            margin: 18px 0;
+            text-align: right;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: none;
+            border: 3px solid var(--light);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .response-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .response-content {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            border-right: 4px solid var(--primary);
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+
+        .response-content h3, .response-content h4 {
+            color: var(--primary);
+            margin: 15px 0 10px 0;
+        }
+
+        .response-content p {
+            margin-bottom: 12px;
+            color: #444;
+        }
+
+        .response-content code {
+            background: #eef2ff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .specializations {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 480px) {
+            .specializations {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .spec-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spec-card:active {
+            transform: scale(0.95);
+        }
+
+        .spec-card.active {
+            box-shadow: 0 0 0 3px white, 0 0 0 6px var(--primary);
+        }
+
+        .spec-icon {
+            font-size: 35px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: var(--error);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+            font-size: 0.9em;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .success-message {
+            background: #d1fae5;
+            border: 2px solid #a7f3d0;
+            color: var(--success);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .file-info {
+            background: var(--light);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #666;
+            display: none;
+        }
+
+        /* تحسينات للشاشات الصغيرة */
+        @media (max-width: 480px) {
+            header {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .card {
+                padding: 20px 15px;
+            }
+            
+            .upload-area {
+                padding: 25px 15px;
+            }
+            
+            select, textarea, .btn {
+                font-size: 16px;
+            }
+        }
+
+        /* تحسينات للشاشات الكبيرة */
+        @media (min-width: 769px) {
+            body {
+                padding: 30px;
+            }
+            
+            .container {
+                max-width: 800px;
+            }
+            
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 25px;
+            }
+            
+            .specializations {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* PWA تجهيزات */
+        .install-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .api-status {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .api-status.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="api-status" id="apiStatus"></div>
+            <h1>🎓 المساعد الهندسي الذكي</h1>
+            <p class="subtitle">منصة تعليمية متطورة لطلاب الهندسة في العراق - مدعومة بالذكاء الاصطناعي</p>
+            <button class="install-btn" id="installBtn">📱 تثبيت التطبيق</button>
+        </header>
+
+        <div class="main-content">
+            <div class="card upload-section">
+                <h2 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    📤 رفع سؤالك
+                </h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <p style="font-size: 17px; color: var(--primary); font-weight: bold; margin-bottom: 5px;">
+                        اضغط هنا أو اسحب الصورة
+                    </p>
+                    <p style="color: #999; font-size: 14px;">
+                        PNG, JPG, JPEG - حتى 5MB
+                    </p>
+                </div>
+                
+                <input type="file" id="fileInput" accept="image/*" capture="environment">
+                <img id="previewImage" class="preview-image" alt="معاينة الصورة">
+                
+                <div class="file-info" id="fileInfo"></div>
+
+                <div class="form-group">
+                    <label for="specialty">⚙️ التخصص الهندسي:</label>
+                    <select id="specialty">
+                        <option value="">-- اختر التخصص --</option>
+                        <option value="petroleum">هندسة النفط والغاز</option>
+                        <option value="electrical">الهندسة الكهربائية</option>
+                        <option value="mechanical">الهندسة الميكانيكية</option>
+                        <option value="civil">الهندسة المدنية</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">📚 المادة الدراسية:</label>
+                    <select id="subject">
+                        <option value="">-- اختر المادة --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalInfo">ℹ️ معلومات إضافية (اختياري):</label>
+                    <textarea id="additionalInfo" placeholder="أضف أي تفاصيل أو توضيحات للسؤال..."></textarea>
+                </div>
+
+                <button class="btn" id="submitBtn" disabled>
+                    <span id="btnText">إرسال السؤال 🚀</span>
+                </button>
+                
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+            </div>
+
+            <div class="card">
+                <h2 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    📊 التخصصات المتاحة
+                </h2>
+                <div class="specializations">
+                    <button class="spec-card" data-specialty="petroleum">
+                        <div class="spec-icon">🛢️</div>
+                        <h3 style="font-size: 16px; margin: 0;">هندسة النفط</h3>
+                    </button>
+                    <button class="spec-card" data-specialty="electrical">
+                        <div class="spec-icon">⚡</div>
+                        <h3 style="font-size: 16px; margin: 0;">كهربائية</h3>
+                    </button>
+                    <button class="spec-card" data-specialty="mechanical">
+                        <div class="spec-icon">⚙️</div>
+                        <h3 style="font-size: 16px; margin: 0;">ميكانيكية</h3>
+                    </button>
+                    <button class="spec-card" data-specialty="civil">
+                        <div class="spec-icon">🏗️</div>
+                        <h3 style="font-size: 16px; margin: 0;">مدنية</h3>
+                    </button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="color: var(--primary); font-weight: bold; margin-top: 15px;">
+                        جاري تحليل السؤال والإجابة عليه...
+                    </p>
+                    <p style="color: #999; font-size: 14px; margin-top: 10px;" id="loadingDetails">
+                        قد يستغرق هذا بضع ثوانٍ
+                    </p>
+                </div>
+
+                <div class="response-section" id="responseSection">
+                    <h2 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        ✅ الإجابة
+                        <span id="responseTime" style="font-size: 14px; color: #999; font-weight: normal;"></span>
+                    </h2>
+                    <div class="response-content" id="responseContent"></div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button class="btn" id="newQuestionBtn" style="background: #666; padding: 12px;">
+                            ✨ سؤال جديد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر عائم للشاشات الصغيرة -->
+    <div class="floating-btn">
+        <button class="btn" id="mobileSubmitBtn" disabled>
+            <span>إرسال السؤال 🚀</span>
+        </button>
+    </div>
+
+    <!-- ملف Manifest لتثبيت PWA -->
+    <script type="application/manifest+json" id="manifest">
+        {
+            "name": "المساعد الهندسي الذكي",
+            "short_name": "المساعد الهندسي",
+            "description": "منصة تعليمية لطلاب الهندسة في العراق",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#667eea",
+            "theme_color": "#667eea",
+            "icons": [
+                {
+                    "src": "icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icon-512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ],
+            "dir": "rtl",
+            "lang": "ar"
+        }
+    </script>
+
+    <script>
+        // ⚙️ المتغيرات العامة
+        const subjects = {
+            petroleum: ['حفر الآبار', 'هندسة المكامن', 'إنتاج النفط والغاز', 'معالجة النفط والغاز', 'الجيولوجيا النفطية', 'هندسة الأنابيب'],
+            electrical: ['الدوائر الكهربائية', 'الآلات الكهربائية', 'أنظمة القوى الكهربائية', 'الإلكترونيات', 'نظم التحكم', 'الاتصالات'],
+            mechanical: ['الديناميكا الحرارية', 'ميكانيكا الموائع', 'نقل الحرارة', 'تصميم العناصر الميكانيكية', 'التصنيع', 'الديناميكا'],
+            civil: ['الإنشاءات', 'ميكانيك التربة', 'هندسة المياه', 'الطرق والجسور', 'إدارة المشاريع', 'مواد البناء']
+        };
+
+        // 🎯 العناصر
+        const elements = {
+            uploadArea: document.getElementById('uploadArea'),
+            fileInput: document.getElementById('fileInput'),
+            previewImage: document.getElementById('previewImage'),
+            fileInfo: document.getElementById('fileInfo'),
+            specialtySelect: document.getElementById('specialty'),
+            subjectSelect: document.getElementById('subject'),
+            submitBtn: document.getElementById('submitBtn'),
+            mobileSubmitBtn: document.getElementById('mobileSubmitBtn'),
+            btnText: document.getElementById('btnText'),
+            loading: document.getElementById('loading'),
+            loadingDetails: document.getElementById('loadingDetails'),
+            responseSection: document.getElementById('responseSection'),
+            responseContent: document.getElementById('responseContent'),
+            responseTime: document.getElementById('responseTime'),
+            errorMessage: document.getElementById('errorMessage'),
+            successMessage: document.getElementById('successMessage'),
+            newQuestionBtn: document.getElementById('newQuestionBtn'),
+            apiStatus: document.getElementById('apiStatus'),
+            installBtn: document.getElementById('installBtn')
+        };
+
+        let selectedFile = null;
+        let apiBaseUrl = ''; // سيتم تعبئته تلقائياً
+
+        // 📡 الكشف التلقائي عن عنوان API
+        function detectApiUrl() {
+            const currentUrl = window.location.origin;
+            
+            // إذا كنا على Vercel
+            if (currentUrl.includes('vercel.app')) {
+                apiBaseUrl = currentUrl + '/api/ask';
+            } 
+            // إذا كنا على localhost
+            else if (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1')) {
+                apiBaseUrl = 'http://localhost:3000/api/ask';
+            }
+            // افتراضياً نستخدم Vercel
+            else {
+                apiBaseUrl = currentUrl + '/api/ask';
+            }
+            
+            console.log('🔗 API URL:', apiBaseUrl);
+            return apiBaseUrl;
+        }
+
+        // 🔌 اختبار اتصال API
+        async function testApiConnection() {
+            try {
+                const response = await fetch(apiBaseUrl.replace('/ask', '/health'));
+                if (response.ok) {
+                    elements.apiStatus.classList.add('connected');
+                    showSuccess('✅ متصل بالخادم بنجاح');
+                }
+            } catch (error) {
+                console.log('⚠️ لا يمكن الاتصال بالخادم، سيستخدم الوضع المحلي');
+            }
+        }
+
+        // 📱 PWA Installation
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            elements.installBtn.style.display = 'block';
+        });
+
+        elements.installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    elements.installBtn.style.display = 'none';
+                }
+            }
+        });
+
+        // 🖼️ إدارة رفع الملفات
+        elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+
+        elements.fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (file && file.type.startsWith('image/')) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('حجم الصورة كبير جداً. الحد الأقصى 5MB');
+                    return;
+                }
+                
+                selectedFile = file;
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    elements.previewImage.src = e.target.result;
+                    elements.previewImage.style.display = 'block';
+                    
+                    // عرض معلومات الملف
+                    elements.fileInfo.innerHTML = `
+                        📁 <strong>${file.name}</strong>
+                        <br>📊 الحجم: ${(file.size / 1024).toFixed(1)} كيلوبايت
+                        <br>📸 النوع: ${file.type.replace('image/', '').toUpperCase()}
+                    `;
+                    elements.fileInfo.style.display = 'block';
+                    
+                    checkFormValid();
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                showError('الرجاء رفع صورة فقط (JPG, PNG)');
+            }
+        }
+
+        // 📦 السحب والإفلات
+        ['dragover', 'dragenter'].forEach(event => {
+            elements.uploadArea.addEventListener(event, (e) => {
+                e.preventDefault();
+                elements.uploadArea.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'dragend'].forEach(event => {
+            elements.uploadArea.addEventListener(event, () => {
+                elements.uploadArea.classList.remove('dragover');
+            });
+        });
+
+        elements.uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        // 🎓 إدارة التخصصات
+        elements.specialtySelect.addEventListener('change', updateSubjects);
+        
+        // اختيار التخصص من البطاقات
+        document.querySelectorAll('.spec-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const specialty = card.dataset.specialty;
+                elements.specialtySelect.value = specialty;
+                
+                // إزالة التفعيل من جميع البطاقات
+                document.querySelectorAll('.spec-card').forEach(c => {
+                    c.classList.remove('active');
+                });
+                
+                // تفعيل البطاقة المختارة
+                card.classList.add('active');
+                
+                updateSubjects();
+            });
+        });
+
+        function updateSubjects() {
+            const specialty = elements.specialtySelect.value;
+            elements.subjectSelect.innerHTML = '<option value="">-- اختر المادة --</option>';
+            
+            if (specialty && subjects[specialty]) {
+                subjects[specialty].forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    elements.subjectSelect.appendChild(option);
+                });
+            }
+            
+            checkFormValid();
+        }
+
+        elements.subjectSelect.addEventListener('change', checkFormValid);
+
+        function checkFormValid() {
+            const isValid = selectedFile && elements.specialtySelect.value && elements.subjectSelect.value;
+            elements.submitBtn.disabled = !isValid;
+            elements.mobileSubmitBtn.disabled = !isValid;
+            return isValid;
+        }
+
+        // 📤 إرسال السؤال
+        async function submitQuestion() {
+            if (!checkFormValid()) {
+                showError('الرجاء إكمال جميع الحقول');
+                return;
+            }
+
+            const startTime = Date.now();
+            
+            // إعداد الواجهة
+            elements.loading.style.display = 'block';
+            elements.responseSection.style.display = 'none';
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+            elements.submitBtn.disabled = true;
+            elements.mobileSubmitBtn.disabled = true;
+            elements.btnText.textContent = 'جاري المعالجة...';
+            
+            try {
+                const base64Image = await fileToBase64(selectedFile);
+                const base64Data = base64Image.split(',')[1];
+                
+                const specialty = elements.specialtySelect.options[elements.specialtySelect.selectedIndex].text;
+                const subject = elements.subjectSelect.value;
+                const additionalText = document.getElementById('additionalInfo').value;
+
+                const apiUrl = apiBaseUrl || detectApiUrl();
+                
+                elements.loadingDetails.textContent = 'جاري الاتصال بالخادم...';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: base64Data,
+                        fileType: selectedFile.type,
+                        specialty: specialty,
+                        subject: subject,
+                        additionalText: additionalText,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+                const endTime = Date.now();
+                const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `خطأ: ${response.status}`);
+                }
+                
+                // عرض النتيجة
+                elements.responseTime.textContent = `(تمت خلال ${timeTaken} ثانية)`;
+                
+                if (data.answer) {
+                    let formattedAnswer = data.answer
+                        .replace(/\n/g, '<br>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        .replace(/^### (.*$)/gm, '<h4>$1</h4>')
+                        .replace(/^## (.*$)/gm, '<h3>$1</h3>')
+                        .replace(/^# (.*$)/gm, '<h2>$1</h2>');
+                    
+                    elements.responseContent.innerHTML = formattedAnswer;
+                } else {
+                    elements.responseContent.innerHTML = `
+                        <h3>🎓 إجابة على سؤالك</h3>
+                        <p><strong>التخصص:</strong> ${specialty}</p>
+                        <p><strong>المادة:</strong> ${subject}</p>
+                        <p>${data.message || 'تم استلام سؤالك بنجاح'}</p>
+                    `;
+                }
+                
+                elements.responseSection.style.display = 'block';
+                showSuccess('✅ تم استلام الإجابة بنجاح');
+                
+                // التمرير للإجابة
+                setTimeout(() => {
+                    elements.responseSection.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                
+                // رد تجريبي في حالة فشل الاتصال
+                if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+                    showMockResponse(startTime);
+                } else {
+                    showError(`خطأ: ${error.message}`);
+                }
+                
+            } finally {
+                elements.loading.style.display = 'none';
+                elements.submitBtn.disabled = false;
+                elements.mobileSubmitBtn.disabled = false;
+                elements.btnText.textContent = 'إرسال السؤال 🚀';
+            }
+        }
+
+        // 🎭 محاكاة رد في حالة عدم الاتصال
+        function showMockResponse(startTime) {
+            const specialty = elements.specialtySelect.options[elements.specialtySelect.selectedIndex].text;
+            const subject = elements.subjectSelect.value;
+            const endTime = Date.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(1);
+            
+            elements.responseTime.textContent = `(تجريبي - ${timeTaken} ثانية)`;
+            
+            const mockAnswers = {
+                petroleum: `
+                    <h3>🎓 هندسة النفط والغاز - ${subject}</h3>
+                    <h4>📝 تحليل السؤال:</h4>
+                    <p>بناءً على الصورة المرفوعة، يبدو أن السؤال يتعلق بـ <strong>${subject}</strong> في المنهاج العراقي.</p>
+                    
+                    <h4>🔧 الحل المقترح:</h4>
+                    <p>لحل هذا النوع من الأسئلة:</p>
+                    <ol>
+                        <li>حدد المعطيات من الصورة</li>
+                        <li>استخدم المعادلة المناسبة من كتاب "هندسة النفط" العراقي</li>
+                        <li>طبق القيم المعطاة</li>
+                        <li>تحقق من الوحدات (وحدات القياس العراقية)</li>
+                    </ol>
+                    
+                    <h4>📚 مرجع عراقي:</h4>
+                    <p>راجع كتاب "مبادئ هندسة النفط" - جامعة الموصل، الفصل المتعلق بـ ${subject}.</p>
+                    
+                    <div style="background: #f0f4ff; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <strong>💡 ملاحظة:</strong> هذه إجابة تجريبية. <a href="#" onclick="showApiInstructions()">انقر هنا</a> لمعرفة كيفية تفعيل الذكاء الاصطناعي الحقيقي.
+                    </div>
+                `,
+                electrical: `
+                    <h3>⚡ الهندسة الكهربائية - ${subject}</h3>
+                    <p>تحليل الدوائر الكهربائية حسب المنهاج العراقي...</p>
+                `,
+                mechanical: `
+                    <h3>⚙️ الهندسة الميكانيكية - ${subject}</h3>
+                    <p>حسابات الديناميكا الحرارية والميكانيكا...</p>
+                `,
+                civil: `
+                    <h3>🏗️ الهندسة المدنية - ${subject}</h3>
+                    <p>تصميم الإنشاءات وتحليل التربة...</p>
+                `
+            };
+            
+            elements.responseContent.innerHTML = mockAnswers[elements.specialtySelect.value] || `
+                <h3>🎓 ${specialty} - ${subject}</h3>
+                <p>تم تحليل سؤالك وسيتم الرد عليه قريباً.</p>
+                <p><strong>نصيحة:</strong> تأكد من وضوح الصورة المرفوعة.</p>
+            `;
+            
+            elements.responseSection.style.display = 'block';
+            showSuccess('✨ هذا رد تجريبي. أضف API Key لتفعيل الذكاء الاصطناعي');
+        }
+
+        function showApiInstructions() {
+            elements.responseContent.innerHTML += `
+                <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 10px; padding: 15px; margin-top: 20px;">
+                    <h4>🔑 كيفية تفعيل الذكاء الاصطناعي الحقيقي:</h4>
+                    <ol>
+                        <li>احصل على API Key من <a href="https://console.anthropic.com" target="_blank">anthropic.com</a></li>
+                        <li>اذهب إلى إعدادات مشروعك على Vercel</li>
+                        <li>أضف متغير البيئة: <code>ANTHROPIC_API_KEY=مفتاحك_هنا</code></li>
+                        <li>أعد نشر المشروع</li>
+                    </ol>
+                    <p>📲 يمكنك فعل هذا كله من هاتفك!</p>
+                </div>
+            `;
+        }
+
+        // 🛠️ دوال مساعدة
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+            setTimeout(() => {
+                elements.errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => {
+                elements.successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // 🎯 أحداث المستخدم
+        elements.submitBtn.addEventListener('click', submitQuestion);
+        elements.mobileSubmitBtn.addEventListener('click', submitQuestion);
+        
+        elements.newQuestionBtn.addEventListener('click', () => {
+            // إعادة تعيين النموذج
+            selectedFile = null;
+            elements.fileInput.value = '';
+            elements.previewImage.style.display = 'none';
+            elements.fileInfo.style.display = 'none';
+            elements.specialtySelect.value = '';
+            elements.subjectSelect.innerHTML = '<option value="">-- اختر المادة --</option>';
+            document.getElementById('additionalInfo').value = '';
+            elements.responseSection.style.display = 'none';
+            elements.errorMessage.style.display = 'none';
+            
+            // إزالة التفعيل من البطاقات
+            document.querySelectorAll('.spec-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            checkFormValid();
+            
+            // العودة للأعلى
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // 🚀 التهيئة
+        window.addEventListener('DOMContentLoaded', () => {
+            detectApiUrl();
+            testApiConnection();
+            checkFormValid();
+            
+            // إعداد PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ Service Worker registered'))
+                    .catch(err => console.log('❌ Service Worker registration failed:', err));
+            }
+        });
+
+        // 📲 دعم الهاتف
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+        }
+    </script>
+</body>
+</html>
