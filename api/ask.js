@@ -1,37 +1,30 @@
-// api/ask.js - الخادم الخلفي للمساعد الهندسي
-// هذا ملف يعمل على Vercel Serverless Functions
-
+// api/ask.js - الإصدار المصحح للاتصال بـ Claude API
 export default async function handler(req, res) {
-  // تفعيل الـ CORS للسماح لموقعك بالاتصال
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  // تفعيل CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // التعامل مع طلبات OPTIONS الخاصة بـ CORS
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // نقطة للتحقق من صحة الخادم
   if (req.method === 'GET') {
+    const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
     return res.status(200).json({
       status: '✅ الخادم يعمل',
-      message: 'مرحباً بك في المساعد الهندسي للطلاب العراقيين',
-      hasApiKey: !!process.env.ANTHROPIC_API_KEY,
-      timestamp: new Date().toISOString(),
-      instructions: process.env.ANTHROPIC_API_KEY 
-        ? 'تم تفعيل الذكاء الاصطناعي! 🎉' 
-        : 'أضف ANTHROPIC_API_KEY في إعدادات Vercel لتفعيل Claude AI'
+      hasApiKey: hasApiKey,
+      message: hasApiKey 
+        ? 'تم تفعيل الذكاء الاصطناعي! جاهز لتحليل الأسئلة.' 
+        : 'أضف ANTHROPIC_API_KEY في إعدادات Vercel',
+      timestamp: new Date().toLocaleString('ar-IQ')
     });
   }
 
-  // التعامل مع طلبات الأسئلة (POST)
   if (req.method === 'POST') {
     try {
       const { image, fileType, specialty, subject, additionalText } = req.body;
 
-      // التحقق من البيانات الأساسية
       if (!specialty || !subject) {
         return res.status(400).json({
           success: false,
@@ -39,21 +32,27 @@ export default async function handler(req, res) {
         });
       }
 
-      console.log(`📥 تم استقبال سؤال في: ${specialty} - ${subject}`);
+      console.log(`📥 معالجة سؤال: ${specialty} - ${subject}`);
 
-      // 🔐 الحالة 1: إذا كان هناك API Key حقيقي - نستخدم Claude AI
-      if (process.env.ANTHROPIC_API_KEY) {
-        const apiKey = process.env.ANTHROPIC_API_KEY;
-        
-        if (!image) {
-          return res.status(400).json({
-            success: false,
-            message: '❌ الرجاء رفع صورة للسؤال'
-          });
-        }
+      // 🔍 التحقق من وجود API Key
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.json({
+          success: true,
+          answer: `# 🔧 ${specialty} - ${subject}\n\nالموقع يعمل! أضف مفتاح API في Vercel لتفعيل الذكاء الاصطناعي.`,
+          isMock: true
+        });
+      }
 
-        // بناء الـ Prompt الأكاديمي
-        const prompt = `أنت أستاذ جامعي عراقي متخصص في ${specialty}، وتُدرّس مادة "${subject}" ضمن المنهاج العراقي.
+      // التحقق من وجود الصورة
+      if (!image) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ الرجاء رفع صورة للسؤال'
+        });
+      }
+
+      // 🎯 بناء الرسالة بشكل صحيح لـ Claude API
+      const prompt = `أنت أستاذ جامعي عراقي متخصص في ${specialty}، وتُدرّس مادة "${subject}" ضمن المنهاج العراقي.
 
 الطالب رفع صورة تحتوي على سؤال أو تمرين. بناءً على تخصصك وخبرتك:
 
@@ -63,198 +62,95 @@ export default async function handler(req, res) {
 4. اشرح الخطوات الحلّية بالتفصيل
 5. قدم نصائح عملية للطالب
 
-${additionalText ? `ملاحظات الطالب الإضافية: ${additionalText}\n\n` : ''}
+${additionalText ? `\nملاحظات الطالب الإضافية: ${additionalText}` : ''}
+
 أجب باللغة العربية الفصحى، وركز على الوضوح والدقة.`;
 
-        // الاتصال بـ Claude API
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-3-sonnet-20240229',
-            max_tokens: 4000,
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  image ? {
-                    type: 'image',
-                    source: {
-                      type: 'base64',
-                      media_type: fileType || 'image/jpeg',
-                      data: image
-                    }
-                  } : null,
-                  {
-                    type: 'text',
-                    text: prompt
+      // 🔄 الاتصال بـ Claude API بالشكل الصحيح
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 4000,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: fileType || 'image/jpeg',
+                    data: image
                   }
-                ].filter(Boolean) // إزالة العناصر الفارغة
-              }
-            ]
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ خطأ من Claude API:', errorText);
-          
-          // تقديم رد بديل
-          return res.json({
-            success: true,
-            answer: `# 🔧 تم استقبال سؤالك في ${specialty}
-
-## 📚 المادة: ${subject}
-
-نعتذر، حدث خطأ تقني أثناء الاتصال بنظام الذكاء الاصطناعي.
-
-### 💡 ما يمكنك فعله:
-1. تحقق من اتصال الإنترنت
-2. حاول مرة أخرى بعد قليل
-3. تأكد من وضوح الصورة المرفوعة
-
-**تفاصيل الخطأ:** ${response.status} - ${response.statusText}
-
----
-*للحصول على مساعدة فورية، يمكنك مراجعة محاضرات مادة ${subject} في المنهاج العراقي.*`,
-            isMock: false,
-            error: true
-          });
-        }
-
-        const data = await response.json();
-        const answer = data.content
-          .filter(item => item.type === 'text')
-          .map(item => item.text)
-          .join('\n\n');
-
-        return res.json({
-          success: true,
-          answer: answer,
-          model: data.model,
-          tokens: data.usage?.total_tokens || 0,
-          isMock: false,
-          timestamp: new Date().toLocaleString('ar-IQ')
-        });
-
-      } 
-      // 🔓 الحالة 2: لا يوجد API Key - نستخدم الرد التجريبي
-      else {
-        // ردود تجريبية حسب التخصص
-        const mockResponses = {
-          petroleum: `# 🛢️ هندسة النفط والغاز - ${subject}
-
-## 🎓 إجابة أكاديمية (تجريبية)
-
-بناءً على المنهاج العراقي لطلبة **هندسة النفط**، إليك التحليل المنهجي للسؤال:
-
-### 📊 **الخطوات الأساسية للحل:**
-1. **تحديد المعطيات:** من الصورة المرفوعة
-2. **اختيار النموذج الحسابي:** وفق الكود العراقي
-3. **تطبيق المعادلات:** مع مراعاة الوحدات (بار، متر مكعب، درجة مئوية)
-4. **التحقق من النتائج:** بمقارنتها مع الجداول القياسية العراقية
-
-### 🔧 **معادلة أساسية في ${subject}:**
-\`\`\`
-معدل الإنتاج = (النفاذية × فرق الضغط × السماكة) / (لزوجة السائل × عامل التصحيح)
-\`\`\`
-
-### 📚 **المراجع العراقية الموصى بها:**
-- "هندسة المكامن النفطية" - د. علي عبدالله (جامعة البصرة)
-- "حفر الآبار" - المنهاج الوزاري العراقي
-- جداول المواصفات القياسية العراقية للزيت الخام
-
-### 💡 **نصيحة عملية للطالب العراقي:**
-"راجع أمثلة الامتحانات النهائية للسنوات 2020-2023 المتوفرة في مكتبة كليتك، حيث تركز بشكل كبير على ${subject}."
-
----
-**⚠️ ملاحظة:** هذه إجابة توضيحية. لتفعيل **الذكاء الاصطناعي الحقيقي** الذي يحلل صورتك بدقة:
-1. احصل على مفتاح API من anthropic.com
-2. أضفه في إعدادات Vercel → Environment Variables
-3. أعد نشر الموقع`,
-          
-          electrical: `# ⚡ الهندسة الكهربائية - ${subject}
-
-## 🔌 إجابة منهجية (تجريبية)
-
-### 📐 **منهجية حل مسائل ${subject}:**
-1. رسم الدائرة الكهربائية من المعطيات
-2. تطبيق قانون كيرشوف للجهود أو التيارات
-3. حساب المقاومة المكافئة
-4. استخدام قانون أوم: \`V = I × R\`
-5. التحقق بوحدات النظام الدولي (SI)
-
----
-*للحصول على إجابة ذكية تحلل صورتك، أضف مفتاح API.*`,
-          
-          mechanical: `# ⚙️ الهندسة الميكانيكية - ${subject}
-
-## 🏭 إجابة هندسية (تجريبية)
-
-### 🌡️ **لمسائل الديناميكا الحرارية:**
-\`\`\`
-الكفاءة = (الشغل الناتج) / (الحرارة الداخلة) × 100%
-\`\`\`
-
----
-*للحصول على إجابة ذكية تحلل صورتك، أضف مفتاح API.*`,
-          
-          civil: `# 🏗️ الهندسة المدنية - ${subject}
-
-## 🏢 إجابة إنشائية (تجريبية)
-
-### 📏 **لحسابات إجهادات الخرسانة:**
-\`\`\`
-الإجهاد المسموح = 0.45 × مقاومة تكسر المكعب
-\`\`\`
-
----
-*للحصول على إجابة ذكية تحلل صورتك، أضف مفتاح API.*`
-        };
-
-        const selectedSpecialty = specialty.toLowerCase().includes('نفط') ? 'petroleum' : 
-                                specialty.toLowerCase().includes('كهرب') ? 'electrical' :
-                                specialty.toLowerCase().includes('ميكانيك') ? 'mechanical' : 'civil';
-
-        return res.json({
-          success: true,
-          answer: mockResponses[selectedSpecialty] || mockResponses.petroleum,
-          model: 'claude-3-sonnet-20240229 (الوضع التجريبي)',
-          tokens: 250,
-          isMock: true,
-          note: '🔧 هذه إجابة تجريبية. أضف ANTHROPIC_API_KEY في إعدادات Vercel لتفعيل الذكاء الاصطناعي الحقيقي الذي يحلل صورتك.',
-          nextSteps: [
-            '1. سجل في anthropic.com واحصل على مفتاح API مجاني',
-            '2. في Vercel: Settings → Environment Variables → Add New',
-            '3. الاسم: ANTHROPIC_API_KEY، القيمة: مفتاحك',
-            '4. أعد النشر (Redeploy)'
+                },
+                {
+                  type: 'text',
+                  text: prompt
+                }
+              ]
+            }
           ]
+        })
+      });
+
+      // 📊 معالجة الاستجابة
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        console.error('❌ Claude API Error:', response.status, responseText);
+        
+        let errorMessage = 'حدث خطأ تقني';
+        if (response.status === 401) {
+          errorMessage = 'مفتاح API غير صالح';
+        } else if (response.status === 400) {
+          errorMessage = 'طلب غير صحيح - تأكد من تنسيق الصورة';
+        } else if (response.status === 429) {
+          errorMessage = 'تجاوز الحد المسموح، حاول مرة أخرى لاحقاً';
+        }
+        
+        return res.json({
+          success: true,
+          answer: `# ⚠️ ${specialty} - ${subject}\n\n**${errorMessage}**\n\nتفاصيل الخطأ: ${response.status}\n\nيمكنك:\n1. التأكد من وضوح الصورة\n2. المحاولة مرة أخرى\n3. التحقق من رصيد API Key`,
+          error: true
         });
       }
 
+      // ✅ نجاح - استخراج الإجابة
+      const data = JSON.parse(responseText);
+      const answer = data.content
+        .filter(item => item.type === 'text')
+        .map(item => item.text)
+        .join('\n\n');
+
+      return res.json({
+        success: true,
+        answer: answer,
+        model: data.model,
+        tokens: data.usage?.total_tokens || 0,
+        isMock: false,
+        timestamp: new Date().toLocaleString('ar-IQ')
+      });
+
     } catch (error) {
-      console.error('🔥 خطأ في الخادم:', error);
+      console.error('🔥 Server Error:', error);
       
       return res.status(500).json({
         success: false,
-        message: 'حدث خطأ غير متوقع في الخادم',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'تفاصيل الخطأ مخفية في وضع الإنتاج',
-        tip: 'حاول مرة أخرى أو تحقق من اتصال الشبكة'
+        message: 'حدث خطأ غير متوقع',
+        error: error.message,
+        tip: 'حاول مرة أخرى أو رفع صورة أوضح'
       });
     }
   }
 
-  // إذا وصلنا هنا، الطلب غير معروف
-  return res.status(404).json({
-    success: false,
-    message: '❌ نقطة النهاية غير موجودة',
-    availableEndpoints: {
-      'GET /api/ask': 'للتحقق من صحة الخادم',
-      'POST /api/ask': 'لإرسال الأسئلة والصور'
-    }
+  res.status(404).json({ 
+    success: false, 
+    message: '❌ نقطة النهاية غير موجودة' 
   });
 }
