@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#667eea">
     <title>المساعد الهندسي - منصة تعليمية للطلاب العراقيين</title>
-    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary: #667eea;
@@ -28,28 +27,12 @@
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             min-height: 100vh;
             padding: 15px;
-            padding-bottom: 80px;
+            padding-bottom: 40px;
         }
 
         .container {
             max-width: 100%;
             margin: 0 auto;
-        }
-
-        /* تثبيت الزر في الأسفل للموبايل */
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .floating-btn {
-                display: block;
-            }
         }
 
         header {
@@ -93,6 +76,22 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+        }
+
+        @media (min-width: 769px) {
+            body {
+                padding: 30px;
+            }
+            
+            .container {
+                max-width: 800px;
+            }
+            
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 25px;
+            }
         }
 
         .card {
@@ -307,47 +306,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .specializations {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 15px 0;
-        }
-
-        @media (max-width: 480px) {
-            .specializations {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .spec-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 20px 15px;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            touch-action: manipulation;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .spec-card:active {
-            transform: scale(0.95);
-        }
-
-        .spec-card.active {
-            box-shadow: 0 0 0 3px white, 0 0 0 6px var(--primary);
-        }
-
-        .spec-icon {
-            font-size: 35px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
         .error-message {
             background: #fee;
             border: 2px solid #fcc;
@@ -409,27 +367,6 @@
             }
         }
 
-        /* تحسينات للشاشات الكبيرة */
-        @media (min-width: 769px) {
-            body {
-                padding: 30px;
-            }
-            
-            .container {
-                max-width: 800px;
-            }
-            
-            .main-content {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 25px;
-            }
-            
-            .specializations {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
         /* PWA تجهيزات */
         .install-btn {
             background: var(--success);
@@ -475,6 +412,7 @@
         </header>
 
         <div class="main-content">
+            <!-- الجزء الأول: رفع السؤال -->
             <div class="card upload-section">
                 <h2 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                     📤 رفع سؤالك
@@ -483,14 +421,15 @@
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📷</div>
                     <p style="font-size: 17px; color: var(--primary); font-weight: bold; margin-bottom: 5px;">
-                        اضغط هنا أو اسحب الصورة
+                        اضغط هنا لاختيار الصورة
                     </p>
                     <p style="color: #999; font-size: 14px;">
-                        PNG, JPG, JPEG - حتى 5MB
+                        PNG, JPG, JPEG - يمكنك اختيار من المعرض
                     </p>
                 </div>
                 
-                <input type="file" id="fileInput" accept="image/*" capture="environment">
+                <!-- ⚡ التعديل: إزالة capture وإضافة multiple لفتح المعرض -->
+                <input type="file" id="fileInput" accept="image/*" multiple>
                 <img id="previewImage" class="preview-image" alt="معاينة الصورة">
                 
                 <div class="file-info" id="fileInfo"></div>
@@ -518,6 +457,7 @@
                     <textarea id="additionalInfo" placeholder="أضف أي تفاصيل أو توضيحات للسؤال..."></textarea>
                 </div>
 
+                <!-- ⚡ الزر الوحيد للإرسال -->
                 <button class="btn" id="submitBtn" disabled>
                     <span id="btnText">إرسال السؤال 🚀</span>
                 </button>
@@ -526,29 +466,8 @@
                 <div class="success-message" id="successMessage"></div>
             </div>
 
+            <!-- الجزء الثاني: عرض الإجابة -->
             <div class="card">
-                <h2 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                    📊 التخصصات المتاحة
-                </h2>
-                <div class="specializations">
-                    <button class="spec-card" data-specialty="petroleum">
-                        <div class="spec-icon">🛢️</div>
-                        <h3 style="font-size: 16px; margin: 0;">هندسة النفط</h3>
-                    </button>
-                    <button class="spec-card" data-specialty="electrical">
-                        <div class="spec-icon">⚡</div>
-                        <h3 style="font-size: 16px; margin: 0;">كهربائية</h3>
-                    </button>
-                    <button class="spec-card" data-specialty="mechanical">
-                        <div class="spec-icon">⚙️</div>
-                        <h3 style="font-size: 16px; margin: 0;">ميكانيكية</h3>
-                    </button>
-                    <button class="spec-card" data-specialty="civil">
-                        <div class="spec-icon">🏗️</div>
-                        <h3 style="font-size: 16px; margin: 0;">مدنية</h3>
-                    </button>
-                </div>
-
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
                     <p style="color: var(--primary); font-weight: bold; margin-top: 15px;">
@@ -573,13 +492,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- زر عائم للشاشات الصغيرة -->
-    <div class="floating-btn">
-        <button class="btn" id="mobileSubmitBtn" disabled>
-            <span>إرسال السؤال 🚀</span>
-        </button>
     </div>
 
     <!-- ملف Manifest لتثبيت PWA -->
@@ -627,7 +539,6 @@
             specialtySelect: document.getElementById('specialty'),
             subjectSelect: document.getElementById('subject'),
             submitBtn: document.getElementById('submitBtn'),
-            mobileSubmitBtn: document.getElementById('mobileSubmitBtn'),
             btnText: document.getElementById('btnText'),
             loading: document.getElementById('loading'),
             loadingDetails: document.getElementById('loadingDetails'),
@@ -642,22 +553,17 @@
         };
 
         let selectedFile = null;
-        let apiBaseUrl = ''; // سيتم تعبئته تلقائياً
+        let apiBaseUrl = '';
 
         // 📡 الكشف التلقائي عن عنوان API
         function detectApiUrl() {
             const currentUrl = window.location.origin;
             
-            // إذا كنا على Vercel
             if (currentUrl.includes('vercel.app')) {
                 apiBaseUrl = currentUrl + '/api/ask';
-            } 
-            // إذا كنا على localhost
-            else if (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1')) {
+            } else if (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1')) {
                 apiBaseUrl = 'http://localhost:3000/api/ask';
-            }
-            // افتراضياً نستخدم Vercel
-            else {
+            } else {
                 apiBaseUrl = currentUrl + '/api/ask';
             }
             
@@ -696,12 +602,15 @@
             }
         });
 
-        // 🖼️ إدارة رفع الملفات
+        // 🖼️ إدارة رفع الملفات (يفتح المعرض)
         elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
 
         elements.fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            handleFile(file);
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const file = files[0]; // نأخذ أول صورة فقط
+                handleFile(file);
+            }
         });
 
         function handleFile(file) {
@@ -731,7 +640,7 @@
                 
                 reader.readAsDataURL(file);
             } else {
-                showError('الرجاء رفع صورة فقط (JPG, PNG)');
+                showError('الرجاء اختيار صورة فقط (JPG, PNG) من معرض الصور');
             }
         }
 
@@ -752,30 +661,15 @@
         elements.uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             elements.uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            handleFile(file);
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                handleFile(file);
+            }
         });
 
-        // 🎓 إدارة التخصصات
+        // 🎓 إدارة التخصصات (من القائمة فقط)
         elements.specialtySelect.addEventListener('change', updateSubjects);
-        
-        // اختيار التخصص من البطاقات
-        document.querySelectorAll('.spec-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const specialty = card.dataset.specialty;
-                elements.specialtySelect.value = specialty;
-                
-                // إزالة التفعيل من جميع البطاقات
-                document.querySelectorAll('.spec-card').forEach(c => {
-                    c.classList.remove('active');
-                });
-                
-                // تفعيل البطاقة المختارة
-                card.classList.add('active');
-                
-                updateSubjects();
-            });
-        });
 
         function updateSubjects() {
             const specialty = elements.specialtySelect.value;
@@ -798,14 +692,13 @@
         function checkFormValid() {
             const isValid = selectedFile && elements.specialtySelect.value && elements.subjectSelect.value;
             elements.submitBtn.disabled = !isValid;
-            elements.mobileSubmitBtn.disabled = !isValid;
             return isValid;
         }
 
         // 📤 إرسال السؤال
         async function submitQuestion() {
             if (!checkFormValid()) {
-                showError('الرجاء إكمال جميع الحقول');
+                showError('الرجاء إكمال جميع الحقول: اختر صورة، تخصص، ومادة');
                 return;
             }
 
@@ -817,7 +710,6 @@
             elements.errorMessage.style.display = 'none';
             elements.successMessage.style.display = 'none';
             elements.submitBtn.disabled = true;
-            elements.mobileSubmitBtn.disabled = true;
             elements.btnText.textContent = 'جاري المعالجة...';
             
             try {
@@ -830,7 +722,7 @@
 
                 const apiUrl = apiBaseUrl || detectApiUrl();
                 
-                elements.loadingDetails.textContent = 'جاري الاتصال بالخادم...';
+                elements.loadingDetails.textContent = 'جاري تحليل السؤال...';
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -902,7 +794,6 @@
             } finally {
                 elements.loading.style.display = 'none';
                 elements.submitBtn.disabled = false;
-                elements.mobileSubmitBtn.disabled = false;
                 elements.btnText.textContent = 'إرسال السؤال 🚀';
             }
         }
@@ -935,7 +826,7 @@
                     <p>راجع كتاب "مبادئ هندسة النفط" - جامعة الموصل، الفصل المتعلق بـ ${subject}.</p>
                     
                     <div style="background: #f0f4ff; padding: 15px; border-radius: 10px; margin-top: 20px;">
-                        <strong>💡 ملاحظة:</strong> هذه إجابة تجريبية. <a href="#" onclick="showApiInstructions()">انقر هنا</a> لمعرفة كيفية تفعيل الذكاء الاصطناعي الحقيقي.
+                        <strong>💡 ملاحظة:</strong> هذه إجابة تجريبية. أضف مفتاح API للحصول على إجابات ذكية حقيقية.
                     </div>
                 `,
                 electrical: `
@@ -960,21 +851,6 @@
             
             elements.responseSection.style.display = 'block';
             showSuccess('✨ هذا رد تجريبي. أضف API Key لتفعيل الذكاء الاصطناعي');
-        }
-
-        function showApiInstructions() {
-            elements.responseContent.innerHTML += `
-                <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 10px; padding: 15px; margin-top: 20px;">
-                    <h4>🔑 كيفية تفعيل الذكاء الاصطناعي الحقيقي:</h4>
-                    <ol>
-                        <li>احصل على API Key من <a href="https://console.anthropic.com" target="_blank">anthropic.com</a></li>
-                        <li>اذهب إلى إعدادات مشروعك على Vercel</li>
-                        <li>أضف متغير البيئة: <code>ANTHROPIC_API_KEY=مفتاحك_هنا</code></li>
-                        <li>أعد نشر المشروع</li>
-                    </ol>
-                    <p>📲 يمكنك فعل هذا كله من هاتفك!</p>
-                </div>
-            `;
         }
 
         // 🛠️ دوال مساعدة
@@ -1005,7 +881,6 @@
 
         // 🎯 أحداث المستخدم
         elements.submitBtn.addEventListener('click', submitQuestion);
-        elements.mobileSubmitBtn.addEventListener('click', submitQuestion);
         
         elements.newQuestionBtn.addEventListener('click', () => {
             // إعادة تعيين النموذج
@@ -1018,11 +893,6 @@
             document.getElementById('additionalInfo').value = '';
             elements.responseSection.style.display = 'none';
             elements.errorMessage.style.display = 'none';
-            
-            // إزالة التفعيل من البطاقات
-            document.querySelectorAll('.spec-card').forEach(card => {
-                card.classList.remove('active');
-            });
             
             checkFormValid();
             
