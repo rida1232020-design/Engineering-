@@ -1,7 +1,8 @@
 {
-  "name": "your-project",
+  "name": "deepseek-api",
   "version": "1.0.0",
   "type": "module",
+  "main": "index.js",
   "dependencies": {
     "openai": "^4.20.0"
   },
@@ -9,6 +10,7 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "node server.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   }
 }
