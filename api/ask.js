@@ -1,95 +1,61 @@
-// pages/api/ask.js
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
 export default async function handler(req, res) {
-  // السماح فقط بـ POST
+  // السماح فقط لطلبات POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const { prompt, systemPrompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    // استخدم API Key من متغيرات البيئة
+    const apiKey = process.env.DEEPSEEK_API_KEY;
     
     if (!apiKey) {
-      console.error('ANTHROPIC_API_KEY is missing');
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    const { image, question, major, subject, additionalInfo } = req.body;
-
-    // إعداد الرسالة
-    const content = [];
-
-    // إضافة الصورة إذا وجدت
-    if (image) {
-      // إزالة البادئة data:image/...;base64, إذا وجدت
-      const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-      const mediaType = image.match(/^data:image\/(\w+);base64,/)?.[1] || 'jpeg';
-      
-      content.push({
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: `image/${mediaType}`,
-          data: base64Data
-        }
-      });
-    }
-
-    // إضافة النص
-    let prompt = `أنت مساعد هندسي متخصص في مساعدة طلاب الهندسة العراقيين.
-
-التخصص: ${major || 'غير محدد'}
-المادة: ${subject || 'غير محددة'}
-
-${question || 'قم بتحليل الصورة وشرح المحتوى'}`;
-
-    if (additionalInfo) {
-      prompt += `\n\nمعلومات إضافية: ${additionalInfo}`;
-    }
-
-    prompt += '\n\nقدم إجابة تفصيلية وواضحة باللغة العربية مع خطوات الحل إن أمكن.';
-
-    content.push({
-      type: 'text',
-      text: prompt
-    });
-
-    // استدعاء Anthropic API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4096,
+        model: 'deepseek-chat', // أو 'deepseek-coder' للبرمجة
         messages: [
           {
+            role: 'system',
+            content: systemPrompt || 'You are a helpful assistant'
+          },
+          {
             role: 'user',
-            content: content
+            content: prompt
           }
-        ]
+        ],
+        stream: false,
+        max_tokens: 2048
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Anthropic API Error:', errorData);
-      return res.status(response.status).json({ 
-        error: errorData.error?.message || 'API request failed' 
-      });
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    
-    // إرجاع الإجابة
-    return res.status(200).json({
-      answer: data.content[0].text
-    });
+    const message = data.choices[0]?.message?.content;
 
+    return res.status(200).json({ response: message });
+    
   } catch (error) {
-    console.error('Server Error:', error);
+    console.error('Error:', error);
     return res.status(500).json({ 
       error: error.message || 'Internal server error' 
     });
