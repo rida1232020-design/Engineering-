@@ -1,11 +1,11 @@
 {
   "functions": {
     "api/ask.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/ask.js" },
-    { "source": "/(.*)", "destination": "/frontend/index.html" }
-  ]
+  "env": {
+    "NODE_VERSION": "24"
+  }
 }
